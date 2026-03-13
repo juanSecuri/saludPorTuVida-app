@@ -1,0 +1,7 @@
+com\farmacia\controller\FarmaciaController.class
+com\farmacia\FarmaciaApp.class
+com\farmacia\model\Usuario.class
+com\farmacia\model\Medicamento.class
+com\farmacia\repository\UsuarioRepository.class
+com\farmacia\repository\MedicamentoRepository.class
+com\farmacia\service\FarmaciaService.class

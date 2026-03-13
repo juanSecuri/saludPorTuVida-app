@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salud Por Tu Vida | Acceso</title>
+    <style>
+        /* Estilos profesionales y limpios */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h2 {
+            color: #0056b3; /* Azul médico */
+            margin: 0;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #777;
+        }
+        .tab.active {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Para que el padding no desborde */
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background-color: #004494;
+        }
+        #mensaje {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>💊 Salud Por Tu Vida</h2>
+        <p>Sistema de Gestión de Farmacia</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" id="tabLogin" onclick="mostrarFormulario('login')">Ingresar</div>
+        <div class="tab" id="tabRegistro" onclick="mostrarFormulario('registro')">Registrarse</div>
+    </div>
+
+    <form id="formLogin">
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" id="loginUsername" required>
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="loginPassword" required>
+        </div>
+        <button type="button" class="btn" onclick="iniciarSesion()">Entrar</button>
+    </form>
+
+    <form id="formRegistro" class="hidden">
+        <div class="form-group">
+            <label>Nombre Completo</label>
+            <input type="text" id="regNombre" required>
+        </div>
+        <div class="form-group">
+            <label>Usuario (Nickname)</label>
+            <input type="text" id="regUsername" required>
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="regPassword" required>
+        </div>
+        <div class="form-group">
+            <label>Rol</label>
+            <select id="regRol">
+                <option value="FARMACEUTICO">Farmacéutico</option>
+                <option value="ADMIN">Administrador</option>
+            </select>
+        </div>
+        <button type="button" class="btn" onclick="registrarUsuario()">Crear Cuenta</button>
+    </form>
+
+    <div id="mensaje"></div>
+</div>
+
+<script>
+    // URL base de tu backend en Spring Boot
+    const API_URL = "http://localhost:8080/api";
+
+    // Función para cambiar la vista entre Login y Registro
+    function mostrarFormulario(tipo) {
+        document.getElementById('mensaje').innerText = ""; // Limpiar mensajes
+        if (tipo === 'login') {
+            document.getElementById('formLogin').classList.remove('hidden');
+            document.getElementById('formRegistro').classList.add('hidden');
+            document.getElementById('tabLogin').classList.add('active');
+            document.getElementById('tabRegistro').classList.remove('active');
+        } else {
+            document.getElementById('formLogin').classList.add('hidden');
+            document.getElementById('formRegistro').classList.remove('hidden');
+            document.getElementById('tabLogin').classList.remove('active');
+            document.getElementById('tabRegistro').classList.add('active');
+        }
+    }
+
+    // Lógica para enviar el REGISTRO a Java
+    async function registrarUsuario() {
+        const nombre = document.getElementById('regNombre').value;
+        const username = document.getElementById('regUsername').value;
+        const password = document.getElementById('regPassword').value;
+        const rol = document.getElementById('regRol').value;
+        const mensajeDiv = document.getElementById('mensaje');
+
+        if(!nombre || !username || !password) {
+            mensajeDiv.style.color = "red";
+            mensajeDiv.innerText = "Por favor, completa todos los campos.";
+            return;
+        }
+
+        mensajeDiv.innerText = "Cargando...";
+
+        try {
+            const respuesta = await fetch(`${API_URL}/registro`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombreCompleto: nombre,
+                    username: username,
+                    password: password,
+                    rol: rol
+                })
+            });
+
+            if (respuesta.ok) {
+                mensajeDiv.style.color = "green";
+                mensajeDiv.innerText = "¡Usuario registrado con éxito! Ya puedes ingresar.";
+                setTimeout(() => mostrarFormulario('login'), 2000); // Cambia a login tras 2 seg
+            } else {
+                mensajeDiv.style.color = "red";
+                mensajeDiv.innerText = "Error al registrar. Intenta de nuevo.";
+            }
+        } catch (error) {
+            mensajeDiv.style.color = "red";
+            mensajeDiv.innerText = "Error de conexión con el servidor.";
+            console.error(error);
+        }
+    }
+
+    // Lógica para enviar el LOGIN a Java
+    async function iniciarSesion() {
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const mensajeDiv = document.getElementById('mensaje');
+
+        if(!username || !password) {
+            mensajeDiv.style.color = "red";
+            mensajeDiv.innerText = "Ingresa usuario y contraseña.";
+            return;
+        }
+
+        mensajeDiv.innerText = "Verificando...";
+
+        try {
+            const respuesta = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            // Tu Spring Boot devuelve un String (texto plano) en el login
+            const textoRespuesta = await respuesta.text(); 
+
+            if (textoRespuesta.includes("Bienvenido")) {
+                mensajeDiv.style.color = "green";
+                mensajeDiv.innerText = textoRespuesta;
+                // Aquí en el futuro podrías redirigir a otra página (ej. inventario.html)
+
+                // Extraer el nombre (quitando "Bienvenido al sistema: ") y guardarlo
+                const nombreReal = textoRespuesta.replace("Bienvenido al sistema: ", "");
+                localStorage.setItem("usuarioLogueado", nombreReal);
+
+                // Redirigir al panel después de 1 segundo
+                setTimeout(() => {
+                    window.location.href = "panel.html";
+                }, 1000);
+            } else {
+                mensajeDiv.style.color = "red";
+                mensajeDiv.innerText = textoRespuesta; // Mostrará "Error: Credenciales incorrectas"
+            }
+        } catch (error) {
+            mensajeDiv.style.color = "red";
+            mensajeDiv.innerText = "Error de conexión con el servidor.";
+            console.error(error);
+        }
+    }
+</script>
+
+</body>
+</html>
